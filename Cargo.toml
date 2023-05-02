@@ -9,3 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 rdev = "0.5.2"
+enigo = "0.1.2"
