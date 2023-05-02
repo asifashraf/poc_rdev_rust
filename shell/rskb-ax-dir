@@ -1,0 +1,16 @@
+#!/bin/bash 
+if [ -d "$1" ]; then
+  cd "$1"
+  echo Enter into $1
+  for file in *; do
+    if [ -f "$file" ]; then
+      # if file name starts with character n-
+        if [[ $file == rskb* ]]; then
+            chmod a+x "./$file"
+            echo changed permissions of "./$file"
+        fi
+    fi
+  done
+else
+  echo "Directory does not exist."
+fi

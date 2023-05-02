@@ -1,0 +1,14 @@
+#!/bin/bash
+
+source rskb-cd
+
+# Run the main.rs file
+# the --release flag is used to compile the code in release mode
+# cargo run --release
+
+
+# Run the main.rs file with the --example flag
+# the --release flag is used to compile the code in release mode
+# the --example flag is used to run the example file
+cargo run
+

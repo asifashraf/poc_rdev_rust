@@ -1,0 +1,8 @@
+#!/bin/bash 
+
+source rskb-cd
+
+cd shell
+
+# call m-ax-dir and pass in current directory's path 
+rskb-ax-dir "$PWD"
