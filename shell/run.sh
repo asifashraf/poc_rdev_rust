@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source rskb-cd
 
 # Run the main.rs file
 # the --release flag is used to compile the code in release mode
