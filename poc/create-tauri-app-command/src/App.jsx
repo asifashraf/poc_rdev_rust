@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/tauri";
+import { WebviewWindow, appWindow, getAll } from '@tauri-apps/api/window';
+
+
 import "./App.css";
 
 function App() {
+
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      
+    })();
+  }, []);
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -33,6 +43,7 @@ function App() {
       <form
         className="row"
         onSubmit={(e) => {
+          console.log(2);
           e.preventDefault();
           greet();
         }}
@@ -43,6 +54,32 @@ function App() {
           placeholder="Enter a name..."
         />
         <button type="submit">Greet</button>
+        <button type="button" onClick={
+          async () => {
+            console.log(1);
+             const findWindow = new WebviewWindow('find', {
+              url: '/index.html',
+              width: 400,
+              height: 400,
+              alwaysOnTop: true,
+            });
+            findWindow.show();
+          }
+        }>open window</button>
+        <button type="button" onClick={
+          async () => {
+            const allWindows = getAll();
+            // iterate all Windows and find by label
+            for (const window of allWindows) {
+              if (window.label === 'find') {
+                window.hide();
+              }
+            }
+
+            //const searchWindow = appWindow.getByLabel('find');
+            //searchWindow.hide();
+          }
+        }>hide window</button>
       </form>
 
       <p>{greetMsg}</p>
