@@ -5,11 +5,29 @@ use tokio_tungstenite::tungstenite::protocol::Message;
 use tokio_tungstenite::accept_async;
 use futures_util::stream::StreamExt;
 use futures_util::sink::SinkExt;
-
+use rdev::{listen, Event};
 #[tauri::command]
 async fn greet(name: &str) -> Result<String, String> {
     Ok(format!("Hello, {}! You've been greeted from Rust!", name))
 }
+
+fn listen_callback(event: Event) {
+    println!("My callback {:?}", event.name);
+    // match event.name {
+    //     Some(string) => println!("input= {:?}", string),
+    //     None => (),
+    // }
+}
+
+#[tauri::command]
+async fn start_listen_keys(){
+    println!("KEYS: start_listen_keys");
+    if let Err(error) = listen(listen_callback) {
+        println!("Error: {:?}", error)
+    }
+}
+
+
 
 #[tauri::command]
 async fn start_server() {
@@ -35,6 +53,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                 match message {
                     Ok(msg) => match msg {
                         Message::Text(txt) => {
+                            println!("msg");
                             if let Err(e) = write.send(Message::Text("Hello from Tauri WebSocket!".to_string())).await {
                                 eprintln!("Failed to send message: {:?}", e);
                             }
@@ -91,6 +110,13 @@ fn main() {
             .setup(|_app| {
                 println!("Spawning server task...");
                 tokio::spawn(start_server());
+                //tokio::spawn(start_listen_keys());
+                tokio::task::spawn_blocking(|| {
+                    match listen(listen_callback) {
+                        Ok(_) => println!("Started listening to keys successfully"),
+                        Err(error) => eprintln!("Failed to start key listening: {:?}", error),
+                    }
+                });
                 println!("pre ok() function in setup");
                 Ok(())
             })
