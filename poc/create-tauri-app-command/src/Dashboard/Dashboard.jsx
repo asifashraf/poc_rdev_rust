@@ -1,30 +1,45 @@
-import { useState, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
+import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import reactLogo from "../assets/react.svg";
 import { WebviewWindow, appWindow, getAll } from '@tauri-apps/api/window';
 
 
-import "./App.css";
+import "../App.css";
 
 function App() {
 
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      
-    })();
-  }, []);
+
+  const openNav = async () => {
+     const findWindow = new WebviewWindow('nav', {
+      url: '/nav.html',
+      width: 400,
+      height: 400,
+      alwaysOnTop: true,
+    });
+    findWindow.show();
+  };
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     setGreetMsg(await invoke("greet", { name }));
   }
 
+  const hasRun = useRef(false);
+  useEffect(() => {
+    (async () =>{
+      if (!hasRun.current) {
+        hasRun.current = true;
+        await openNav();
+      }
+    })();
+  }, []);
+
   return (
     <div className="container">
-      <h1>Welcome to Tauri! 2</h1>
+      <h1>Dashboard</h1>
 
       <div className="row">
         <a href="https://vitejs.dev" target="_blank">
@@ -55,16 +70,7 @@ function App() {
         />
         <button type="submit">Greet</button>
         <button type="button" onClick={
-          async () => {
-            console.log(1);
-             const findWindow = new WebviewWindow('find', {
-              url: '/index.html',
-              width: 400,
-              height: 400,
-              alwaysOnTop: true,
-            });
-            findWindow.show();
-          }
+          openNav
         }>open window</button>
         <button type="button" onClick={
           async () => {

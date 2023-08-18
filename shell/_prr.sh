@@ -2,10 +2,8 @@
 action=$1
 if [[ -z "$action" || "$action" == "--help" ]]; then
   echo "====== poc rdev rust ======"
-  echo "[g.] GIT       "
-  echo "commit, status, push"
-  echo "[pta.] POC Tauri APP /poc/create-tauri-app-command"
-  echo "dev"
+  echo "[g.] GIT:                         commit, status, push"
+  echo "[pta.]create-tauri-app-command:   dev"
   echo "==============================================================="
 else
  case $action in
