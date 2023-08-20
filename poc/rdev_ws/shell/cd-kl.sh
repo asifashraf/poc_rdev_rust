@@ -1,1 +1,0 @@
-cd /Users/asif/git/poc_rdev_rust/poc/rdev_poc

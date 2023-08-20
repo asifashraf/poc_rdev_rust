@@ -6,6 +6,8 @@ use tokio_tungstenite::accept_async;
 use futures_util::stream::StreamExt;
 use futures_util::sink::SinkExt;
 use rdev::{listen, Event};
+use std::thread;
+use std::time::Duration;
 #[tauri::command]
 async fn greet(name: &str) -> Result<String, String> {
     Ok(format!("Hello, {}! You've been greeted from Rust!", name))
@@ -92,9 +94,22 @@ fn main_working_websocket() {
     runtime.block_on(start_server());
     println!("run time blocked");
 }
-
+fn callback(event: Event) {
+    println!("My callback {:?}", event.name);
+    match event.name {
+        Some(string) => println!("input= {:?}", string),
+        None => (),
+    }
+}
 fn main() {
-    println!("-------------------- Program startup --------------------");
+    // Spawn a new thread for rdev's listen function.
+    thread::spawn(|| {
+        if let Err(error) = listen(callback) {
+            println!("Error: {:?}", error);
+        }
+    });
+
+    // Set up the Tokio runtime and run the Tauri application on the main thread.
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
@@ -110,13 +125,6 @@ fn main() {
             .setup(|_app| {
                 println!("Spawning server task...");
                 tokio::spawn(start_server());
-                //tokio::spawn(start_listen_keys());
-                tokio::task::spawn_blocking(|| {
-                    match listen(listen_callback) {
-                        Ok(_) => println!("Started listening to keys successfully"),
-                        Err(error) => eprintln!("Failed to start key listening: {:?}", error),
-                    }
-                });
                 println!("pre ok() function in setup");
                 Ok(())
             })
@@ -128,5 +136,4 @@ fn main() {
             });
         println!("blocking async function ends.");
     });
-    println!("run time blocked");
 }
