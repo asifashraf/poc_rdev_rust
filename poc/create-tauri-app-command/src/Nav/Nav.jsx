@@ -12,7 +12,7 @@ function Nav() {
             pageLoaded.current = true;
             // First time logic here. 
             console.log("Nav.jsx: loaded for first time only");
-            const websocket = new WebSocket('ws://127.0.0.1:14703');
+            const websocket = new WebSocket('ws://127.0.0.1:14705');
             websocket.onopen = () => {
                 console.log('Connected to the WebSocket');
             };

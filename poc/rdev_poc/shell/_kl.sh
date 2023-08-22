@@ -2,7 +2,7 @@
 action=$1
 if [[ -z "$action" || "$action" == "--help" ]]; then
   echo "  ====== Key listener ======"
-  echo "                      run, build, build-release, update-dep, test, doc, format, publish-pkg"
+  echo "                      run, build, clean, build-release, update-dep, test, doc, format, publish-pkg"
   #echo "  r.  (run)           main, keys, keys-db, keys-rl"
   echo "  g.                  commit, status, push"
 else
@@ -11,6 +11,12 @@ else
  "run")
          source cd-kl.sh
          cargo run
+     ;;
+
+
+ "clean")
+         source cd-kl.sh
+         cargo clean
      ;;
 
   "r.main")
