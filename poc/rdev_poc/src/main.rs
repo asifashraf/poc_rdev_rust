@@ -21,15 +21,19 @@ fn main() {
     std::thread::spawn(move || {
         loop {
             match event_hub.poll_event() {
+                
                 WsEvent::Connect(client_id, responder) => {
+                
                     println!("A client connected with id #{}", client_id);
                     clients_for_thread.lock().unwrap().insert(client_id, responder);
                 }
+                
                 WsEvent::Disconnect(client_id) => {
                     println!("Client #{} disconnected.", client_id);
                     clients_for_thread.lock().unwrap().remove(&client_id);
                     validated_clients_for_thread.lock().unwrap().remove(&client_id);
                 }
+
                 WsEvent::Message(in_client_id, message) => {
                     println!("Received a message from client #{}: {:?}", in_client_id, message);
                     const AUTH_CODE: &str = "EdbKsUzjFHYNRmTAWqGClcBXgrZivLQhJoMItSbwEPaDnxOpfVuyXerHPksLOhBvXeUfzaCwIyRGtQJmNVblMnsjZdYKFrcPoAigXuhZWq";
