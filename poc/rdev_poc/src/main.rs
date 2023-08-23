@@ -32,7 +32,7 @@ fn main() {
                 }
                 WsEvent::Message(in_client_id, message) => {
                     println!("Received a message from client #{}: {:?}", in_client_id, message);
-                    const AUTH_CODE: &str = "ABC12356753422DFREDSJJHHY";
+                    const AUTH_CODE: &str = "EdbKsUzjFHYNRmTAWqGClcBXgrZivLQhJoMItSbwEPaDnxOpfVuyXerHPksLOhBvXeUfzaCwIyRGtQJmNVblMnsjZdYKFrcPoAigXuhZWq";
 
                     match message {
                         WsMessage::Text(text_message) => {
