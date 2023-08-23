@@ -8,13 +8,16 @@ function Nav() {
   const [messages, setMessages] = useState([]);
   useEffect(() => { 
     (async() => {
-        if (!pageLoaded.current) {
-            pageLoaded.current = true;
+
+      
+        const connectSocket = () => {
+            
             // First time logic here. 
             console.log("Nav.jsx: loaded for first time only");
             const websocket = new WebSocket('ws://127.0.0.1:14705');
             websocket.onopen = () => {
                 console.log('Connected to the WebSocket');
+                websocket.send('EdbKsUzjFHYNRmTAWqGClcBXgrZivLQhJoMItSbwEPaDnxOpfVuyXerHPksLOhBvXeUfzaCwIyRGtQJmNVblMnsjZdYKFrcPoAigXuhZWq');
             };
     
             websocket.onmessage = (event) => {
@@ -32,7 +35,25 @@ function Nav() {
     
             setWs(websocket);
 
+          
+        }
+
+        // Periodically check the connection
+        setInterval(function() {
+          if (!ws || ws.readyState === WebSocket.CLOSED) {
+              console.log("WebSocket is not connected. Attempting to reconnect...");
+              connectSocket();
           }
+        }, 5000); // Check every 5 seconds
+
+
+        if (!pageLoaded.current) {
+          pageLoaded.current = true;
+          connectSocket();
+        }
+        
+
+
     })();
   }, []);
 
