@@ -9,7 +9,13 @@ import "./styles.css";
 import SplashScreen from "./SplashScreen";
 import Dashboard from "./Dashboard/Dashboard";
 import Nav from "./Nav/Nav";
-
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
 const parsed = queryString.parse(location.search);
 console.log('query string', parsed);
 const router = createBrowserRouter([
@@ -28,6 +34,9 @@ const router = createBrowserRouter([
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <RecoilRoot>
+      <RouterProvider router={router} />
+    </RecoilRoot>
+    
   </React.StrictMode>,
 );

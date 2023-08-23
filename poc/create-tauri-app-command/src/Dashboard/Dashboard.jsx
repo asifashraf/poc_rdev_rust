@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import reactLogo from "../assets/react.svg";
-import { WebviewWindow, appWindow, getAll } from '@tauri-apps/api/window';
-
+import { WebviewWindow, getAll } from '@tauri-apps/api/window';
+import {
+  useRecoilState,
+} from 'recoil';
+import socketState from "../state/socketState";
 
 import "../App.css";
 
@@ -10,7 +13,7 @@ function App() {
 
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
-
+  const [socketConnected, setSocketConnected] = useRecoilState(socketState);
 
   const openNav = async () => {
      const findWindow = new WebviewWindow('nav', {
@@ -28,6 +31,7 @@ function App() {
   }
 
   const hasRun = useRef(false);
+  
   useEffect(() => {
     (async () =>{
       if (!hasRun.current) {
@@ -40,6 +44,9 @@ function App() {
   return (
     <div className="container">
       <h1>Dashboard</h1>
+
+      {socketConnected && 'Socket connected'}
+      {!socketConnected && 'Socket Disconnected'}
 
       <div className="row">
         <a href="https://vitejs.dev" target="_blank">

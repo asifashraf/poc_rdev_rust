@@ -5,6 +5,9 @@ use std::sync::{Arc, Mutex};
 use chrono::{Local, Utc};
 use uuid::Uuid;
 use serde_json::json;
+use serde::Deserialize;
+use serde_json::Value;
+
 
 fn main() {
     println!("--- Listening to Input ---");
@@ -21,32 +24,34 @@ fn main() {
     std::thread::spawn(move || {
         loop {
             match event_hub.poll_event() {
-                
                 WsEvent::Connect(client_id, responder) => {
-                
-                    println!("A client connected with id #{}", client_id);
                     clients_for_thread.lock().unwrap().insert(client_id, responder);
                 }
-                
                 WsEvent::Disconnect(client_id) => {
                     println!("Client #{} disconnected.", client_id);
                     clients_for_thread.lock().unwrap().remove(&client_id);
                     validated_clients_for_thread.lock().unwrap().remove(&client_id);
                 }
-
                 WsEvent::Message(in_client_id, message) => {
-                    println!("Received a message from client #{}: {:?}", in_client_id, message);
                     const AUTH_CODE: &str = "EdbKsUzjFHYNRmTAWqGClcBXgrZivLQhJoMItSbwEPaDnxOpfVuyXerHPksLOhBvXeUfzaCwIyRGtQJmNVblMnsjZdYKFrcPoAigXuhZWq";
-
-                    match message {
-                        WsMessage::Text(text_message) => {
-                            if AUTH_CODE == text_message {
-                                println!("Client #{} is validated: {:?}", in_client_id, text_message);
-                                validated_clients_for_thread.lock().unwrap().insert(in_client_id);
+                    println!("--- Listening to Input --- {:?}", message);
+                    if let WsMessage::Text(text_message) = message {
+                        match serde_json::from_str::<HashMap<String, Value>>(&text_message) {
+                            Ok(map) => {
+                                if let Some(msg_type) = map.get("type") {
+                                    if msg_type == "auth" {
+                                        if let Some(data) = map.get("data") {
+                                            if data.as_str() == Some(AUTH_CODE) {
+                                                println!("Client #{} connected", in_client_id);
+                                                validated_clients_for_thread.lock().unwrap().insert(in_client_id);
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        }
-                        _ => {
-                            // Handle other message types or ignore them
+                            Err(e) => {
+                                eprintln!("Error deserializing data: {:?}", e);
+                            }
                         }
                     }
                 }
@@ -54,6 +59,7 @@ fn main() {
         }
     });
 
+    // Note: I'm assuming you have a function called `listen` and `callback`.
     if let Err(error) = listen(move |event| callback(event, &clients, &validated_clients)) {
         println!("Error: {:?}", error);
     }
