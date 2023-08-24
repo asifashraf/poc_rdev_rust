@@ -3,33 +3,15 @@ use cli_clipboard;
 use enigo::{Enigo, Key as EnigoKey, KeyboardControllable};
 use rdev::{listen, Event};
 use rdev::{simulate, EventType, Key, SimulateError};
-use rdev::{Keyboard, KeyboardState};
-use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
 use simple_websockets::{Event as WsEvent, Message as WsMessage, Responder};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
-use std::thread::sleep;
-use std::time::Duration;
 use std::{thread, time};
 use uuid::Uuid;
 
-fn send(event_type: &EventType) {
-    let delay = time::Duration::from_millis(20);
-    match simulate(event_type) {
-        Ok(()) => (),
-        Err(SimulateError) => {
-            println!("We could not send {:?}", event_type);
-        }
-    }
-    // Let ths OS catchup (at least MacOS)
-    thread::sleep(delay);
-}
-
 fn main() {
-    let mut keyboard = Keyboard::new().unwrap();
-
     let keys_map = Arc::new(Mutex::new(get_keys_map()));
     // Clone the Arc to share with threads
     let keys_map_thread = Arc::clone(&keys_map);
@@ -43,9 +25,6 @@ fn main() {
 
     let clients_for_thread = clients.clone();
     let validated_clients_for_thread = validated_clients.clone();
-
-    // hash map by character, store Key and bool
-    let mut keys_map = get_keys_map();
 
     std::thread::spawn(move || {
         loop {
@@ -162,55 +141,12 @@ fn main() {
                                                         }
                                                     }
                                                 } else {
-                                                    println!(
-                                                        "2. Key not found: {:?}", c
-                                                    );
+                                                    println!("2. Key not found: {:?}", c);
                                                     //enigo.key_down(EnigoKey::Layout(c));
                                                     //enigo.key_up(EnigoKey::Layout(c));
                                                     enigo.key_sequence(&c.to_string());
                                                 }
                                             }
-
-                                            // Loop over the characters from data_string
-                                            // for c in data_string.chars() {
-                                            //     // print character
-                                            //     println!("typing char: {}", c);
-                                            //     if let Some(key) = char_to_key(c) {
-                                            //         // Type each character using rdev
-                                            //         send(&EventType::KeyPress(key));
-                                            //     }
-                                            // }
-
-                                            // const sentence: &str =
-                                            //     "abcABC123!@#$%^&*()_+-={}[]\";\\;':\",./<>?`~";
-                                            // for c in data_string.chars() {
-                                            //     let keys_map = keys_map_thread.lock().unwrap();
-                                            //     let key_from_map = keys_map.get(&c);
-                                            //     if let Some((key, is_shifted)) = key_from_map {
-                                            //         println!("Character => {:?}", key);
-                                            //         if key == &Key::Unknown(0) {
-                                            //             // Key not found in the map
-                                            //             println!("Key not found");
-                                            //         } else {
-                                            //             // Key was found in the map
-                                            //             println!(
-                                            //                 "Key found: {:?}, is_shifted: {}",
-                                            //                 key, is_shifted
-                                            //             );
-                                            //             if *is_shifted {
-                                            //                 send(&EventType::KeyPress(
-                                            //                     Key::ShiftLeft,
-                                            //                 )); // Simulating Shift key press
-                                            //             }
-                                            //             send(&EventType::KeyPress(key.clone())); // Simulating the key press
-                                            //             if *is_shifted {
-                                            //                 send(&EventType::KeyRelease(
-                                            //                     Key::ShiftLeft,
-                                            //                 )); // Simulating Shift key release
-                                            //             }
-                                            //         }
-                                            //     }
-                                            // }
                                         }
                                     }
                                 }
@@ -268,7 +204,7 @@ fn callback(
 
 fn get_keys_map() -> HashMap<char, (Key, bool)> {
     let mut my_hashmap = HashMap::new();
-    
+
     my_hashmap.insert('a', (Key::KeyA, false));
     my_hashmap.insert('b', (Key::KeyB, false));
     my_hashmap.insert('c', (Key::KeyC, false));
@@ -334,140 +270,27 @@ fn get_keys_map() -> HashMap<char, (Key, bool)> {
     my_hashmap.insert('8', (Key::Num8, false));
     my_hashmap.insert('9', (Key::Num9, false));
 
-    // my_hashmap.insert(')', (Key::Num0, true));
-    // my_hashmap.insert('!', (Key::Num1, true));
-    // my_hashmap.insert('@', (Key::Num2, true));
-    // my_hashmap.insert('#', (Key::Num3, true));
-    // my_hashmap.insert('$', (Key::Num4, true));
-    // my_hashmap.insert('%', (Key::Num5, true));
-    // my_hashmap.insert('^', (Key::Num6, true));
-    // my_hashmap.insert('&', (Key::Num7, true));
-    // my_hashmap.insert('*', (Key::Num8, true));
-    // my_hashmap.insert('(', (Key::Num9, true));
-
     my_hashmap.insert('\n', (Key::Return, false));
     my_hashmap.insert(' ', (Key::Space, false));
     my_hashmap.insert('\t', (Key::Tab, false));
 
     //BackQuote
     my_hashmap.insert('`', (Key::BackQuote, false));
-    //my_hashmap.insert('~', (Key::BackQuote, true));
 
     my_hashmap.insert('-', (Key::Minus, false));
-    //my_hashmap.insert('_', (Key::Minus, true));
     my_hashmap.insert('=', (Key::Equal, false));
-    //my_hashmap.insert('+', (Key::Equal, true));
 
-
-    // my_hashmap.insert('[', (Key::LeftBracket, false));
-    // my_hashmap.insert('{', (Key::LeftBracket, true));
-    // my_hashmap.insert(']', (Key::RightBracket, false));
-    // my_hashmap.insert('}', (Key::RightBracket, true));
-    // my_hashmap.insert(';', (Key::SemiColon, false));
-    // my_hashmap.insert(':', (Key::SemiColon, true));
-    // my_hashmap.insert('\'', (Key::Quote, false));
-    // my_hashmap.insert('"', (Key::Quote, true));
-
-    /**  
-    
-    BackSlash \ |
-
-    IntlBackslash / ?
-
-    Comma , <
-
-    Dot . >
-
-    Slash / ?
-
-     */
     return my_hashmap;
 }
 
-fn mapped_keys(c: char) -> (Key, bool) {
-    match c {
-        'a' => (Key::KeyA, false),
-        'b' => (Key::KeyB, false),
-        'c' => (Key::KeyC, false),
-        'd' => (Key::KeyD, false),
-        'e' => (Key::KeyE, false),
-        'f' => (Key::KeyF, false),
-        'g' => (Key::KeyG, false),
-        'h' => (Key::KeyH, false),
-        'i' => (Key::KeyI, false),
-        'j' => (Key::KeyJ, false),
-        'k' => (Key::KeyK, false),
-        'l' => (Key::KeyL, false),
-        'm' => (Key::KeyM, false),
-        'n' => (Key::KeyN, false),
-        'o' => (Key::KeyO, false),
-        'p' => (Key::KeyP, false),
-        'q' => (Key::KeyQ, false),
-        'r' => (Key::KeyR, false),
-        's' => (Key::KeyS, false),
-        't' => (Key::KeyT, false),
-        'u' => (Key::KeyU, false),
-        'v' => (Key::KeyV, false),
-        'w' => (Key::KeyW, false),
-        'x' => (Key::KeyX, false),
-        'y' => (Key::KeyY, false),
-        'z' => (Key::KeyZ, false),
-        _ => (Key::Unknown(0), false),
+fn send(event_type: &EventType) {
+    let delay = time::Duration::from_millis(20);
+    match simulate(event_type) {
+        Ok(()) => (),
+        Err(SimulateError) => {
+            println!("We could not send {:?}", event_type);
+        }
     }
-}
-
-fn char_to_key(c: char) -> Option<Key> {
-    match c {
-        'a' => Some(Key::KeyA),
-        'b' => Some(Key::KeyB),
-        'c' => Some(Key::KeyC),
-        'd' => Some(Key::KeyD),
-        'e' => Some(Key::KeyE),
-        'f' => Some(Key::KeyF),
-        'g' => Some(Key::KeyG),
-        'h' => Some(Key::KeyH),
-        'i' => Some(Key::KeyI),
-        'j' => Some(Key::KeyJ),
-        'k' => Some(Key::KeyK),
-        'l' => Some(Key::KeyL),
-        'm' => Some(Key::KeyM),
-        'n' => Some(Key::KeyN),
-        'o' => Some(Key::KeyO),
-        'p' => Some(Key::KeyP),
-        'q' => Some(Key::KeyQ),
-        'r' => Some(Key::KeyR),
-        's' => Some(Key::KeyS),
-        't' => Some(Key::KeyT),
-        'u' => Some(Key::KeyU),
-        'v' => Some(Key::KeyV),
-        'w' => Some(Key::KeyW),
-        'x' => Some(Key::KeyX),
-        'y' => Some(Key::KeyY),
-        'z' => Some(Key::KeyZ),
-
-        '0' => Some(Key::Num0),
-        '1' => Some(Key::Num1),
-        '2' => Some(Key::Num2),
-        '3' => Some(Key::Num3),
-        '4' => Some(Key::Num4),
-        '5' => Some(Key::Num5),
-        '6' => Some(Key::Num6),
-        '7' => Some(Key::Num7),
-        '8' => Some(Key::Num8),
-        '9' => Some(Key::Num9),
-        ' ' => Some(Key::Space),
-        '\n' => Some(Key::Return),
-        ',' => Some(Key::Comma),
-        '.' => Some(Key::Dot),
-        '/' => Some(Key::Slash),
-        ';' => Some(Key::SemiColon),
-        '\'' => Some(Key::Quote),
-        '[' => Some(Key::LeftBracket),
-        ']' => Some(Key::RightBracket),
-        '\\' => Some(Key::BackSlash),
-        '`' => Some(Key::BackQuote),
-        '-' => Some(Key::Minus),
-        '=' => Some(Key::Equal),
-        _ => None, // Return None for characters not covered above
-    }
+    // Let ths OS catchup (at least MacOS)
+    thread::sleep(delay);
 }
