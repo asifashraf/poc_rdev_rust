@@ -27,19 +27,26 @@ function Nav() {
   }, []);
 
 
-  const sendMessage = () => {
-    ws.send('hi nb');
-  };
+
 
   return (
     <div className="container">
+      
       <h1>Navigation</h1>
+
+      <button onClick={pasteTextViaClipboard} >paste_text_via_clipboard </button>
+
+      <button onClick={setTextInClipboard} >set_text_in_clipboard </button>
+
+      <button onClick={typeCharsOneByOne} >type_characters_one_by_one </button>
+      <button onClick={writeSequence} >write_sequence</button>
+      
       {
         messages.map((message, index) => {
           return <p key={index}>{message}</p>
         })
       }
-      <button onClick={sendMessage} >send msg </button>
+      
     </div>
   );
 }
@@ -70,4 +77,51 @@ function connectSocket(setMessages, setBackendMessage, setSocketInstance) {
   };
   setSocketInstance(websocketInstance);
 }
+
+function pasteTextViaClipboard () {
+  setInterval(() => {
+    websocketInstance.send(JSON.stringify({
+      type: 'paste_text_via_clipboard', data: 'type this text bla bla bla... '
+    }));
+  }, 2000);
+};
+
+function setTextInClipboard () {
+  websocketInstance.send(JSON.stringify({
+    type: 'set_text_in_clipboard', data: 'set this text to clipbord... '
+  }));
+};
+
+
+function typeCharsOneByOne(){
+  setTimeout(() => {
+    websocketInstance.send(JSON.stringify({
+      type: 'type_characters_one_by_one', data: `start ❤️abcdefghijklmnopqrstuvwxyz
+      ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      \`1234567890-=
+      ~!@#$%^&*()_+
+      []\\;',./{}|:"<>? before tab      after tab  two  spaces
+      `
+    }));
+  }, 3000);
+}
+
+function writeSequence(){
+  setTimeout(() => {
+    websocketInstance.send(JSON.stringify({
+      type: 'write_sequence', data: `start ❤️abcdefghijklmnopqrstuvwxyz
+      ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      \`1234567890-=
+      ~!@#$%^&*()_+
+      []\\;',./{}|:"<>? before tab      after tab  two  spaces
+      ====================
+      This all happend via the sequence
+      `
+      
+    }));
+    
+  }, 3000);
+}
+
+
 export default Nav;
