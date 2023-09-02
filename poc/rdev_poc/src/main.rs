@@ -67,6 +67,8 @@ fn main() {
                                         }
 
                                         IN_TYPE_BLOCK.store(true, Ordering::Relaxed);
+                                        print!("!"); // PRINT
+                                        io::stdout().flush().unwrap(); // FLUSH OUTPUT
 
                                         if msg_type == "write_sequence" && false {
                                             let mut enigo = Enigo::new();
@@ -169,6 +171,8 @@ fn main() {
 
                                         // Turn the flag ON when leaving this block
                                         IN_TYPE_BLOCK.store(false, Ordering::Relaxed);
+                                        print!("?"); // PRINT
+                                        io::stdout().flush().unwrap(); // FLUSH OUTPUT
                                     }
                                 }
                             }
