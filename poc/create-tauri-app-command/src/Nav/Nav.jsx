@@ -30,14 +30,14 @@ function Nav() {
         setInterval(function () {
           connectSocket(setMessages, setBackendMessage, setWs, setSocketConnected, setCharCount);
         }, 5000); // Check every 5 seconds
-        setInterval(function () {
-          console.log('count messages', messagesRef.current.length);
-          if(messagesRef.current.length > 0){
-            navWindow.show();
-          }else{
-            navWindow.hide();
-          }
-        }, 100); // Set visibility 
+        // setInterval(function () {
+        //   console.log('count messages', messagesRef.current.length);
+        //   if(messagesRef.current.length > 0){
+        //     navWindow.show();
+        //   }else{
+        //     navWindow.hide();
+        //   }
+        // }, 100); // Set visibility 
         // hide nav
         hideWin(setHideWinCount);
       }
@@ -65,8 +65,11 @@ function Nav() {
       }} >clear</button>
       <button onClick={pasteTextViaClipboard} >paste_text_via_clipboard </button>
       <button onClick={setTextInClipboard} >set_text_in_clipboard </button>
+      
       <button onClick={typeCharsOneByOne} >type_characters_one_by_one </button>
+      better on win
       <button onClick={writeSequence} >write_sequence</button>
+      better on mac 
       {
         messages.map((message, index) => {
           return <p key={index}>{message}</p>
@@ -77,18 +80,30 @@ function Nav() {
   );
 }
 
+const testText = `
+if(true){
+  return false;
+}
+❤️
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+\`1234567890-=
+~!@#$%^&*()_+
+[]\\;',./{}|:"<>? before tab  after tab  two  spaces
+`;
 
 function pasteTextViaClipboard () {
-  setInterval(() => {
+  setTimeout(() => {
     websocketInstance.send(JSON.stringify({
-      type: 'paste_text_via_clipboard', data: 'type this text bla bla bla... '
+      type: 'paste_text_via_clipboard', data: `paste_text_via_clipboard: ` + testText
     }));
-  }, 2000);
+  }, 3000);
+  
 };
 
 function setTextInClipboard () {
   websocketInstance.send(JSON.stringify({
-    type: 'set_text_in_clipboard', data: 'set this text to clipbord... '
+    type: 'set_text_in_clipboard', data: 'set this text to clipbord... ' + testText
   }));
 };
 
@@ -96,12 +111,7 @@ function setTextInClipboard () {
 function typeCharsOneByOne(){
   setTimeout(() => {
     websocketInstance.send(JSON.stringify({
-      type: 'type_characters_one_by_one', data: `start ❤️abcdefghijklmnopqrstuvwxyz
-      ABCDEFGHIJKLMNOPQRSTUVWXYZ
-      \`1234567890-=
-      ~!@#$%^&*()_+
-      []\\;',./{}|:"<>? before tab      after tab  two  spaces
-      `
+      type: 'type_characters_one_by_one', data: `type_characters_one_by_one` + testText
     }));
   }, 3000);
 }
@@ -109,14 +119,7 @@ function typeCharsOneByOne(){
 function writeSequence(){
   setTimeout(() => {
     websocketInstance.send(JSON.stringify({
-      type: 'write_sequence', data: `start ❤️abcdefghijklmnopqrstuvwxyz
-      ABCDEFGHIJKLMNOPQRSTUVWXYZ
-      \`1234567890-=
-      ~!@#$%^&*()_+
-      []\\;',./{}|:"<>? before tab      after tab  two  spaces
-      ====================
-      This all happend via the sequence
-      `
+      type: 'write_sequence', data: `write_sequence` + testText
       
     }));
     

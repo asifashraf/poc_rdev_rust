@@ -10,7 +10,10 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
 use uuid::Uuid;
-
+use std::io::{self, Write};
+use std::sync::atomic::{AtomicBool, Ordering};
+// Global mutable variable to track if we are in "type_characters_one_by_one" block
+static IN_TYPE_BLOCK: AtomicBool = AtomicBool::new(false);
 fn main() {
     let keys_map = Arc::new(Mutex::new(get_keys_map()));
     // Clone the Arc to share with threads
@@ -63,9 +66,24 @@ fn main() {
                                             }
                                         }
 
+                                        IN_TYPE_BLOCK.store(true, Ordering::Relaxed);
+
+                                        if msg_type == "write_sequence" && false {
+                                            let mut enigo = Enigo::new();
+                                            #[cfg(target_os = "windows")]
+                                            for line in data_string.lines() {
+                                                enigo.key_sequence(line); // type the line
+                                                enigo.key_click(enigo::keycodes::Key::Return); // press the ENTER key
+                                            }
+
+                                            #[cfg(not(target_os = "windows"))]
+                                            enigo.key_sequence(data_string); // type the whole string as is
+                                        }
+
                                         if msg_type == "write_sequence" {
                                             let mut enigo = Enigo::new();
-                                            enigo.key_sequence(data_string);
+                                            enigo.key_sequence(data_string); // this works on mac really good. 
+                                            // but has issues on windows. So trying another way. 
                                         }
 
                                         if msg_type == "paste_text_via_clipboard" {
@@ -120,10 +138,10 @@ fn main() {
                                                 let key_from_map = keys_map.get(&c);
                                                 if let Some((key, is_shifted)) = key_from_map {
                                                     if key == &Key::Unknown(0) {
-                                                        println!(
-                                                            "Key not found: {:?}, is_shifted: {}",
-                                                            key, is_shifted
-                                                        );
+                                                        // println!(
+                                                        //     "Key not found: {:?}, is_shifted: {}",
+                                                        //     key, is_shifted
+                                                        // );
                                                         enigo.key_click(EnigoKey::Layout(c));
                                                     } else {
                                                         // Key was found in the map
@@ -141,13 +159,16 @@ fn main() {
                                                         }
                                                     }
                                                 } else {
-                                                    println!("2. Key not found: {:?}", c);
+                                                    //println!("2. Key not found: {:?}", c);
                                                     //enigo.key_down(EnigoKey::Layout(c));
                                                     //enigo.key_up(EnigoKey::Layout(c));
                                                     enigo.key_sequence(&c.to_string());
                                                 }
                                             }
                                         }
+
+                                        // Turn the flag ON when leaving this block
+                                        IN_TYPE_BLOCK.store(false, Ordering::Relaxed);
                                     }
                                 }
                             }
@@ -172,6 +193,10 @@ fn callback(
     clients: &Arc<Mutex<HashMap<u64, Responder>>>,
     validated_clients: &Arc<Mutex<HashSet<u64>>>,
 ) {
+    // Check the flag, if it's ON, then return early
+    if IN_TYPE_BLOCK.load(Ordering::Relaxed) {
+        return;
+    }
     if event.name.is_some() {
         let local_timestamp = Local::now().to_rfc3339();
         let utc_timestamp = Utc::now().to_rfc3339();
@@ -191,7 +216,8 @@ fn callback(
 
         let locked_clients = clients.lock().unwrap();
         let locked_validated_clients = validated_clients.lock().unwrap();
-
+        print!("."); // PRINT 
+        io::stdout().flush().unwrap(); // FLUSH OUTPUT
         for (client_id, responder) in locked_clients.iter() {
             if locked_validated_clients.contains(client_id) {
                 if !responder.send(WsMessage::Text(message.clone())) {
@@ -199,6 +225,7 @@ fn callback(
                 }
             }
         }
+        
     }
 }
 
